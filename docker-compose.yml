@@ -1,6 +1,21 @@
 version: "3.9"
 
 services:
+    postgres-container:
+        image: postgres:15
+        container_name: postgres-container
+        restart: unless-stopped
+        ports:
+            - "5432:5432"
+        environment:
+            POSTGRES_USER: ${DB_USER}
+            POSTGRES_PASSWORD: ${DB_PASSWORD}
+            POSTGRES_DB: ${DB_NAME}
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+        networks:
+            - backend
+
     api:
         build: .
         container_name: ts-api
@@ -15,3 +30,11 @@ services:
             - .:/usr/src/app
             - /usr/src/app/node_modules
         command: npm run dev
+        networks:
+            - backend
+
+volumes:
+    pgdata:
+
+networks:
+    backend:
