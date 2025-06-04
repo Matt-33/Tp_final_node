@@ -1,7 +1,19 @@
 {
+  "name": "tp_final_node",
+  "version": "1.0.0",
+  "description": "Projet final Node.js",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "db:generate": "drizzle-kit generate:pg",
+    "db:migrate": "ts-node src/db/migrate.ts",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "test:db": "ts-node src/db/testConnection.ts"
+  },
   "dependencies": {
     "argon2": "^0.43.0",
-    "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
     "dotenv": "^16.5.0",
@@ -25,21 +37,5 @@
     "ts-node-dev": "^2.0.0",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
-  },
-  "name": "tp_final_ts_node",
-  "version": "1.0.0",
-  "main": "index.js",
-  "scripts": {
-    "dev": "ts-node-dev --respawn src/server.ts",
-    "start": "node dist/server.ts",
-    "build": "tsc",
-    "generate": "drizzle-kit generate --config=src/config/drizzle.ts",
-    "migrate": "tsx -r dotenv/config src/config/migrate.ts",
-    "studio": "drizzle-kit studio --config=src/config/drizzle.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": ""
+  }
 }
