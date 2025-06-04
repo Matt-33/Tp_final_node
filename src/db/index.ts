@@ -20,7 +20,7 @@ export async function testDatabaseConnection() {
 		await pool.connect();
 		const db = drizzle(pool);
 		console.log("✅ Connexion à PostgreSQL réussie !");
-		await pool.end();
+		return true;
 	} catch (error) {
 		console.log(pool);
 		console.error("❌ Erreur de connexion à PostgreSQL :", error);
