@@ -1,0 +1,225 @@
+import { Request, Response } from "express";
+import { reservationsModel } from "../models/reservationsModel";
+import { AuthRequest } from "../middlewares/authMiddleware";
+
+export const reservationsController = {
+  /**
+   * Créer une nouvelle réservation
+   */
+  create: async (req: AuthRequest, res: Response) => {
+    try {
+      const { 
+        restaurantId, tableId, reservationDate, duration,
+        partySize, specialRequests, status 
+      } = req.body;
+
+      // Utiliser l'ID de l'utilisateur authentifié ou celui fourni dans la requête
+      const userId = req.user?.id || req.body.userId;
+
+      if (!userId) {
+        return res.status(400).json({ 
+          success: false,
+          error: "L'ID de l'utilisateur est requis" 
+        });
+      }
+
+      if (!restaurantId) {
+        return res.status(400).json({ 
+          success: false,
+          error: "L'ID du restaurant est requis" 
+        });
+      }
+
+      const newReservation = await reservationsModel.create({
+        userId,
+        restaurantId,
+        tableId,
+        reservationDate: new Date(reservationDate),
+        duration,
+        partySize,
+        specialRequests,
+        status: status || "pending",
+        confirmed: false
+      });
+
+      res.status(201).json({
+        success: true,
+        message: "Réservation créée avec succès",
+        data: newReservation[0]
+      });
+    } catch (error) {
+      console.error("Erreur lors de la création de la réservation:", error);
+      res.status(500).json({ 
+        success: false,
+        error: "Erreur lors de la création de la réservation" 
+      });
+    }
+  },
+
+  /**
+   * Récupérer toutes les réservations
+   */
+  getAll: async (_req: Request, res: Response) => {
+    try {
+      const reservations = await reservationsModel.getAll();
+      
+      res.status(200).json({
+        success: true,
+        count: reservations.length,
+        data: reservations
+      });
+    } catch (error) {
+      console.error("Erreur lors de la récupération des réservations:", error);
+      res.status(500).json({ 
+        success: false,
+        error: "Erreur lors de la récupération des réservations" 
+      });
+    }
+  },
+
+  /**
+   * Récupérer une réservation par son ID
+   */
+  getById: async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const reservation = await reservationsModel.getById(id);
+
+      if (!reservation) {
+        return res.status(404).json({ 
+          success: false,
+          error: "Réservation non trouvée" 
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        data: reservation
+      });
+    } catch (error) {
+      console.error("Erreur lors de la récupération de la réservation:", error);
+      res.status(500).json({ 
+        success: false,
+        error: "Erreur lors de la récupération de la réservation" 
+      });
+    }
+  },
+
+  /**
+   * Mettre à jour une réservation
+   */
+  update: async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { 
+        tableId, reservationDate, duration,
+        partySize, specialRequests, status, confirmed 
+      } = req.body;
+      
+      // Vérifier si la réservation existe
+      const existingReservation = await reservationsModel.getById(id);
+      
+      if (!existingReservation) {
+        return res.status(404).json({ 
+          success: false,
+          error: "Réservation non trouvée" 
+        });
+      }
+
+      // Mettre à jour la réservation
+      const updateData: any = {};
+      
+      if (tableId) updateData.tableId = tableId;
+      if (reservationDate) updateData.reservationDate = new Date(reservationDate);
+      if (duration) updateData.duration = duration;
+      if (partySize) updateData.partySize = partySize;
+      if (specialRequests !== undefined) updateData.specialRequests = specialRequests;
+      if (status) updateData.status = status;
+      if (confirmed !== undefined) updateData.confirmed = confirmed;
+      
+      const updatedReservation = await reservationsModel.update(id, updateData);
+
+      res.status(200).json({
+        success: true,
+        message: "Réservation mise à jour avec succès",
+        data: updatedReservation
+      });
+    } catch (error) {
+      console.error("Erreur lors de la mise à jour de la réservation:", error);
+      res.status(500).json({ 
+        success: false,
+        error: "Erreur lors de la mise à jour de la réservation" 
+      });
+    }
+  },
+
+  /**
+   * Confirmer une réservation
+   */
+  confirm: async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      
+      // Vérifier si la réservation existe
+      const existingReservation = await reservationsModel.getById(id);
+      
+      if (!existingReservation) {
+        return res.status(404).json({ 
+          success: false,
+          error: "Réservation non trouvée" 
+        });
+      }
+
+      // Confirmer la réservation
+      const updatedReservation = await reservationsModel.update(id, {
+        confirmed: true,
+        status: "confirmed"
+      });
+
+      res.status(200).json({
+        success: true,
+        message: "Réservation confirmée avec succès",
+        data: updatedReservation
+      });
+    } catch (error) {
+      console.error("Erreur lors de la confirmation de la réservation:", error);
+      res.status(500).json({ 
+        success: false,
+        error: "Erreur lors de la confirmation de la réservation" 
+      });
+    }
+  },
+
+  /**
+   * Supprimer une réservation
+   */
+  delete: async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      
+      // Vérifier si la réservation existe
+      const existingReservation = await reservationsModel.getById(id);
+      
+      if (!existingReservation) {
+        return res.status(404).json({ 
+          success: false,
+          error: "Réservation non trouvée" 
+        });
+      }
+
+      // Supprimer la réservation
+      await reservationsModel.delete(id);
+
+      res.status(200).json({
+        success: true,
+        message: "Réservation supprimée avec succès"
+      });
+    } catch (error) {
+      console.error("Erreur lors de la suppression de la réservation:", error);
+      res.status(500).json({ 
+        success: false,
+        error: "Erreur lors de la suppression de la réservation" 
+      });
+    }
+  }
+};

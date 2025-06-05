@@ -27,4 +27,19 @@ export const tableModels = {
 	delete: (id: string) => {
 		return db.delete(tables).where(eq(tables.id, id)).execute();
 	},
+
+	getByRestaurantId: (restaurantId: string) => {
+		return db.query.tables.findMany({
+			where: eq(tables.restaurantId, restaurantId),
+			orderBy: (tables, { asc }) => [asc(tables.tableNumber)],
+		});
+	},
+
+	getAvailableByRestaurantId: (restaurantId: string) => {
+		return db.query.tables.findMany({
+			where: (tables, { and, eq }) =>
+				and(eq(tables.restaurantId, restaurantId), eq(tables.isAvailable, true)),
+			orderBy: (tables, { asc }) => [asc(tables.tableNumber)],
+		});
+	},
 };

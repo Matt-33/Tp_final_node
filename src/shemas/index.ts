@@ -1,4 +1,4 @@
-import { users } from "./drizzle/usersModel";
+import { users } from "./drizzle/users";
 import { restaurants } from "./drizzle/restaurants";
 import { tables } from "./drizzle/tables";
 import { reservations } from "./drizzle/reservations";

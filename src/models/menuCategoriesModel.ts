@@ -34,4 +34,11 @@ export const menuCategoriesModel = {
 			.where(eq(menuCategories.id, id))
 			.execute();
 	},
+
+	getByRestaurantId: (restaurantId: string) => {
+		return db.query.menuCategories.findMany({
+			where: eq(menuCategories.restaurantId, restaurantId),
+			orderBy: (menuCategories, { asc }) => [asc(menuCategories.name)],
+		});
+	},
 };
