@@ -6,12 +6,18 @@ import { env } from "../config/env";
 
 export const authController = {
 	register: async (req: Request, res: Response) => {
+		console.log("Register endpoint called, body:", req.body);
 		const { email, password, firstName, lastName } = req.body;
+
+		if (!email || !password || !firstName || !lastName) {
+			return res.status(400).json({ error: "Champs requis manquants" });
+		}
 
 		try {
 			const existingUser = await usersModel.getByEmail(email);
 			if (existingUser) {
 				res.status(409).json({ error: "Email déjà utilisé" });
+				return;
 			}
 
 			const hashedPassword = await argon2.hash(password);
@@ -31,8 +37,8 @@ export const authController = {
 				message: "Utilisateur créé",
 				user: newUser,
 			});
-			return;
 		} catch (err) {
+			console.error("Erreur register:", err);
 			res.status(500).json({
 				error: "Erreur serveur lors de l'inscription",
 			});
