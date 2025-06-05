@@ -4,236 +4,268 @@ import { AuthRequest } from "../middlewares/authMiddleware";
 import argon2 from "argon2";
 
 export const usersController = {
-  /**
-   * Créer un nouvel utilisateur
-   */
-  create: async (req: Request, res: Response) => {
-    try {
-      const { email, phone, firstName, lastName, city, postalCode, username, password, address, role } = req.body;
+	/**
+	 * Créer un nouvel utilisateur
+	 */
+	create: async (req: Request, res: Response): Promise<void> => {
+		try {
+			const {
+				email,
+				phone,
+				firstName,
+				lastName,
+				city,
+				postalCode,
+				username,
+				password,
+				address,
+				role,
+			} = req.body;
 
-      // Vérifier si l'email existe déjà
-      const existingUser = await usersModel.getByEmail(email);
-      if (existingUser) {
-        return res.status(409).json({ 
-          success: false,
-          error: "Un utilisateur avec cet email existe déjà" 
-        });
-      }
+			const existingUser = await usersModel.getByEmail(email);
+			if (existingUser) {
+				res.status(409).json({
+					success: false,
+					error: "Un utilisateur avec cet email existe déjà",
+				});
+				return; // <-- ici on stoppe la fonction
+			}
 
-      // Hasher le mot de passe
-      const hashedPassword = await argon2.hash(password);
+			const hashedPassword = await argon2.hash(password);
 
-      const newUser = await usersModel.create({
-        email,
-        phone,
-        firstName,
-        lastName,
-        city,
-        postalCode,
-        username,
-        password: hashedPassword,
-        address,
-        role: role || "customer"
-      });
+			const newUser = await usersModel.create({
+				email,
+				phone,
+				firstName,
+				lastName,
+				city,
+				postalCode,
+				username,
+				password: hashedPassword,
+				address,
+				role: role || "customer",
+			});
 
-      // Ne pas retourner le mot de passe
-      const { password: _, ...userWithoutPassword } = newUser[0];
+			const { password: _, ...userWithoutPassword } = newUser[0];
 
-      res.status(201).json({
-        success: true,
-        message: "Utilisateur créé avec succès",
-        data: userWithoutPassword
-      });
-    } catch (error) {
-      console.error("Erreur lors de la création de l'utilisateur:", error);
-      res.status(500).json({ 
-        success: false,
-        error: "Erreur lors de la création de l'utilisateur" 
-      });
-    }
-  },
+			res.status(201).json({
+				success: true,
+				message: "Utilisateur créé avec succès",
+				data: userWithoutPassword,
+			});
+		} catch (error) {
+			console.error(
+				"Erreur lors de la création de l'utilisateur:",
+				error
+			);
+			res.status(500).json({
+				success: false,
+				error: "Erreur lors de la création de l'utilisateur",
+			});
+		}
+	},
 
-  /**
-   * Récupérer tous les utilisateurs
-   */
-  getAll: async (_req: Request, res: Response) => {
-    try {
-      const users = await usersModel.getAll();
-      
-      // Retirer les mots de passe de la réponse
-      const usersWithoutPasswords = users.map(user => {
-        const { password, ...userWithoutPassword } = user;
-        return userWithoutPassword;
-      });
+	/**
+	 * Récupérer tous les utilisateurs
+	 */
+	getAll: async (_req: Request, res: Response) => {
+		try {
+			const users = await usersModel.getAll();
 
-      res.status(200).json({
-        success: true,
-        count: users.length,
-        data: usersWithoutPasswords
-      });
-    } catch (error) {
-      console.error("Erreur lors de la récupération des utilisateurs:", error);
-      res.status(500).json({ 
-        success: false,
-        error: "Erreur lors de la récupération des utilisateurs" 
-      });
-    }
-  },
+			// Retirer les mots de passe de la réponse
+			const usersWithoutPasswords = users.map((user) => {
+				const { password, ...userWithoutPassword } = user;
+				return userWithoutPassword;
+			});
 
-  /**
-   * Récupérer un utilisateur par son ID
-   */
-  getById: async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const user = await usersModel.getById(id);
+			res.status(200).json({
+				success: true,
+				count: users.length,
+				data: usersWithoutPasswords,
+			});
+		} catch (error) {
+			console.error(
+				"Erreur lors de la récupération des utilisateurs:",
+				error
+			);
+			res.status(500).json({
+				success: false,
+				error: "Erreur lors de la récupération des utilisateurs",
+			});
+		}
+	},
 
-      if (!user) {
-        return res.status(404).json({ 
-          success: false,
-          error: "Utilisateur non trouvé" 
-        });
-      }
+	/**
+	 * Récupérer un utilisateur par son ID
+	 */
+	getById: async (req: Request, res: Response): Promise<void> => {
+		try {
+			const { id } = req.params;
+			const user = await usersModel.getById(id);
 
-      // Ne pas renvoyer le mot de passe
-      const { password, ...userWithoutPassword } = user;
+			if (!user) {
+				res.status(404).json({
+					success: false,
+					error: "Utilisateur non trouvé",
+				});
+				return;
+			}
 
-      res.status(200).json({
-        success: true,
-        data: userWithoutPassword
-      });
-    } catch (error) {
-      console.error("Erreur lors de la récupération de l'utilisateur:", error);
-      res.status(500).json({ 
-        success: false,
-        error: "Erreur lors de la récupération de l'utilisateur" 
-      });
-    }
-  },
+			const { password, ...userWithoutPassword } = user;
 
-  /**
-   * Mettre à jour un utilisateur
-   */
-  update: async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const { email, phone, firstName, lastName, city, postalCode, username, password, address, role } = req.body;
-      
-      // Vérifier si l'utilisateur existe
-      const existingUser = await usersModel.getById(id);
-      
-      if (!existingUser) {
-        return res.status(404).json({ 
-          success: false,
-          error: "Utilisateur non trouvé" 
-        });
-      }
+			res.status(200).json({
+				success: true,
+				data: userWithoutPassword,
+			});
+		} catch (error) {
+			console.error(
+				"Erreur lors de la récupération de l'utilisateur:",
+				error
+			);
+			res.status(500).json({
+				success: false,
+				error: "Erreur lors de la récupération de l'utilisateur",
+			});
+		}
+	},
 
-      // Préparer les données à mettre à jour
-      const updateData: any = {
-        email,
-        phone,
-        firstName,
-        lastName,
-        city,
-        postalCode,
-        username,
-        address,
-        role
-      };
+	/**
+	 * Mettre à jour un utilisateur
+	 */
+	update: async (req: Request, res: Response): Promise<void> => {
+		try {
+			const { id } = req.params;
+			const {
+				email,
+				phone,
+				firstName,
+				lastName,
+				city,
+				postalCode,
+				username,
+				password,
+				address,
+				role,
+			} = req.body;
 
-      // Si un nouveau mot de passe est fourni, le hasher
-      if (password) {
-        updateData.password = await argon2.hash(password);
-      }
+			const existingUser = await usersModel.getById(id);
 
-      // Mettre à jour l'utilisateur
-      const updatedUser = await usersModel.update(id, updateData);
+			if (!existingUser) {
+				res.status(404).json({
+					success: false,
+					error: "Utilisateur non trouvé",
+				});
+				return; // STOP la fonction ici, sans return res
+			}
 
-      // Ne pas renvoyer le mot de passe
-      const { password: _, ...userWithoutPassword } = updatedUser[0] || {};
+			const updateData: any = {
+				email,
+				phone,
+				firstName,
+				lastName,
+				city,
+				postalCode,
+				username,
+				address,
+				role,
+			};
 
-      res.status(200).json({
-        success: true,
-        message: "Utilisateur mis à jour avec succès",
-        data: userWithoutPassword
-      });
-    } catch (error) {
-      console.error("Erreur lors de la mise à jour de l'utilisateur:", error);
-      res.status(500).json({ 
-        success: false,
-        error: "Erreur lors de la mise à jour de l'utilisateur" 
-      });
-    }
-  },
+			if (password) {
+				updateData.password = await argon2.hash(password);
+			}
 
-  /**
-   * Supprimer un utilisateur
-   */
-  delete: async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      
-      // Vérifier si l'utilisateur existe
-      const existingUser = await usersModel.getById(id);
-      
-      if (!existingUser) {
-        return res.status(404).json({ 
-          success: false,
-          error: "Utilisateur non trouvé" 
-        });
-      }
+			const updatedUser = await usersModel.update(id, updateData);
 
-      // Supprimer l'utilisateur
-      await usersModel.delete(id);
+			const { password: _, ...userWithoutPassword } =
+				updatedUser[0] || {};
 
-      res.status(200).json({
-        success: true,
-        message: "Utilisateur supprimé avec succès"
-      });
-    } catch (error) {
-      console.error("Erreur lors de la suppression de l'utilisateur:", error);
-      res.status(500).json({ 
-        success: false,
-        error: "Erreur lors de la suppression de l'utilisateur" 
-      });
-    }
-  },
+			res.status(200).json({
+				success: true,
+				message: "Utilisateur mis à jour avec succès",
+				data: userWithoutPassword,
+			});
+		} catch (error) {
+			console.error(
+				"Erreur lors de la mise à jour de l'utilisateur:",
+				error
+			);
+			res.status(500).json({
+				success: false,
+				error: "Erreur lors de la mise à jour de l'utilisateur",
+			});
+		}
+	},
 
-  /**
-   * Récupérer le profil de l'utilisateur connecté
-   */
-  getProfile: async (req: AuthRequest, res: Response) => {
-    try {
-      if (!req.user || !req.user.id) {
-        return res.status(401).json({
-          success: false,
-          error: "Utilisateur non authentifié"
-        });
-      }
+	/**
+	 * Supprimer un utilisateur
+	 */
+	delete: async (req: Request, res: Response) => {
+		try {
+			const { id } = req.params;
 
-      const user = await usersModel.getById(req.user.id);
-      
-      if (!user) {
-        return res.status(404).json({
-          success: false,
-          error: "Profil utilisateur non trouvé"
-        });
-      }
+			const existingUser = await usersModel.getById(id);
 
-      // Ne pas renvoyer le mot de passe
-      const { password, ...userWithoutPassword } = user;
+			if (!existingUser) {
+				res.status(404).json({
+					success: false,
+					error: "Utilisateur non trouvé",
+				});
+				return;
+			}
 
-      res.status(200).json({
-        success: true,
-        data: userWithoutPassword
-      });
-    } catch (error) {
-      console.error("Erreur lors de la récupération du profil:", error);
-      res.status(500).json({
-        success: false,
-        error: "Erreur lors de la récupération du profil utilisateur"
-      });
-    }
-  }
+			await usersModel.delete(id);
+
+			res.status(200).json({
+				success: true,
+				message: "Utilisateur supprimé avec succès",
+			});
+		} catch (error) {
+			console.error(
+				"Erreur lors de la suppression de l'utilisateur:",
+				error
+			);
+			res.status(500).json({
+				success: false,
+				error: "Erreur lors de la suppression de l'utilisateur",
+			});
+		}
+	},
+
+	/**
+	 * Récupérer le profil de l'utilisateur connecté
+	 */
+	getProfile: async (req: AuthRequest, res: Response): Promise<void> => {
+		try {
+			if (!req.user || !req.user.id) {
+				res.status(401).json({
+					success: false,
+					error: "Utilisateur non authentifié",
+				});
+				return;
+			}
+
+			const user = await usersModel.getById(req.user.id);
+
+			if (!user) {
+				res.status(404).json({
+					success: false,
+					error: "Profil utilisateur non trouvé",
+				});
+				return;
+			}
+
+			const { password, ...userWithoutPassword } = user;
+
+			res.status(200).json({
+				success: true,
+				data: userWithoutPassword,
+			});
+		} catch (error) {
+			console.error("Erreur lors de la récupération du profil:", error);
+			res.status(500).json({
+				success: false,
+				error: "Erreur lors de la récupération du profil utilisateur",
+			});
+		}
+	},
 };

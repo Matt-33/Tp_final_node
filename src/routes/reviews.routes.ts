@@ -15,15 +15,11 @@ router.put("/:id", authenticateJWT, reviewsController.update);
 router.delete("/:id", authenticateJWT, reviewsController.delete);
 
 // Routes pour administrateurs (modération des avis)
-router.patch("/:id/moderate", authenticateJWT, authorizeRoles("admin"), (req, res) => {
-  const { id } = req.params;
-  const { approved, moderationComment } = req.body;
-  
-  // Mettre à jour l'avis avec les infos de modération
-  reviewsController.update(
-    { ...req, body: { approved, moderationComment } },
-    res
-  );
-});
+router.patch(
+	"/:id/moderate",
+	authenticateJWT,
+	authorizeRoles("admin"),
+	reviewsController.moderate
+);
 
 export default router;

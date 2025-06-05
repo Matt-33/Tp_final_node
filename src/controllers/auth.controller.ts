@@ -11,24 +11,13 @@ export const authController = {
 		try {
 			const existingUser = await usersModel.getByEmail(email);
 			if (existingUser) {
-				return res.status(409).json({ error: "Email déjà utilisé" });
+				res.status(409).json({ error: "Email déjà utilisé" });
+				return;
 			}
 
 			console.log("Vérification de l'email:", email);
 
 			const hashedPassword = await argon2.hash(password);
-
-			console.log("Données reçues pour la création de l'utilisateur:")
-		console.log({
-			email,
-			firstName,
-			lastName,
-			password,
-			phone,
-			username,
-			city,
-			postalCode,
-		});
 
 			// Créer l'utilisateur
 			const newUser = await usersModel.create({
@@ -47,13 +36,14 @@ export const authController = {
 				user: newUser,
 			});
 		} catch (err) {
+			console.error("Erreur register:", err);
 			res.status(500).json({
 				error: "Erreur serveur lors de l'inscription",
 			});
 		}
 	},
 
-	login: async (req: Request, res: Response) => {
+	login: async (req: Request, res: Response): Promise<void> => {
 		const { email, password } = req.body;
 
 		try {
@@ -61,17 +51,15 @@ export const authController = {
 			console.log("Tentative de connexion pour l'utilisateur:", user);
 
 			if (!user) {
-				return res
-					.status(401)
-					.json({ error: "Identifiants invalides" });
+				res.status(401).json({ error: "Identifiants invalides" });
+				return;
 			}
 
 			const isValid = await argon2.verify(user.password, password);
 
 			if (!isValid) {
-				return res
-					.status(401)
-					.json({ error: "Mot de passe incorrect" });
+				res.status(401).json({ error: "Mot de passe incorrect" });
+				return;
 			}
 			console.log("Mot de passe vérifié pour l'utilisateur:", user.email);
 			// Generate JWT with role information
