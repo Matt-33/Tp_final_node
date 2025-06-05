@@ -1,5 +1,5 @@
 import { pgTable, uuid, timestamp, text, integer } from "drizzle-orm/pg-core";
-import { users } from "./usersModel";
+import { users } from "./users";
 import { restaurants } from "./restaurants";
 
 export const reviews = pgTable("reviews", {

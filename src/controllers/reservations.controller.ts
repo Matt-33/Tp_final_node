@@ -106,6 +106,36 @@ export const reservationsController = {
   },
 
   /**
+   * Récupérer les réservations d'un utilisateur spécifique
+   */
+  getByUserId: async (req: AuthRequest, res: Response) => {
+    try {
+      const userId = req.user?.id || req.params.userId;
+      
+      if (!userId) {
+        return res.status(400).json({ 
+          success: false,
+          error: "ID d'utilisateur requis" 
+        });
+      }
+      
+      const userReservations = await reservationsModel.getByUserId(userId);
+      
+      res.status(200).json({
+        success: true,
+        count: userReservations.length,
+        data: userReservations
+      });
+    } catch (error) {
+      console.error("Erreur lors de la récupération des réservations:", error);
+      res.status(500).json({ 
+        success: false,
+        error: "Erreur lors de la récupération des réservations de l'utilisateur" 
+      });
+    }
+  },
+
+  /**
    * Mettre à jour une réservation
    */
   update: async (req: Request, res: Response) => {

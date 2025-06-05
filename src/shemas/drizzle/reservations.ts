@@ -6,7 +6,7 @@ import {
 	varchar,
 	boolean,
 } from "drizzle-orm/pg-core";
-import { users } from "./usersModel";
+import { users } from "./users";
 import { restaurants } from "./restaurants";
 import { tables } from "./tables";
 

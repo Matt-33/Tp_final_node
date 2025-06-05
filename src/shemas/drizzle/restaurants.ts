@@ -7,7 +7,7 @@ import {
 	integer,
 	time,
 } from "drizzle-orm/pg-core";
-import { users } from "./usersModel";
+import { users } from "./users";
 
 export const restaurants = pgTable("restaurants", {
 	id: uuid("id").defaultRandom().primaryKey(),
