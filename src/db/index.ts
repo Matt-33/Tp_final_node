@@ -3,7 +3,8 @@ import { Pool } from "pg";
 import "dotenv/config";
 import { schema, Schema } from "../shemas";
 
-const pool = new Pool({
+// Export the pool directly so it can be used elsewhere
+export const pool = new Pool({
 	host: process.env.DB_HOST,
 	port: Number(process.env.DB_PORT),
 	user: process.env.DB_USER,

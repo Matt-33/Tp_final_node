@@ -3,6 +3,8 @@ import { AuthRequest } from "./authMiddleware";
 
 export const authorizeRoles = (...roles: string[]) => {
 	return (req: AuthRequest, res: Response, next: NextFunction) => {
+		console.log(`Authorizing roles: ${roles.join(", ")}`); // Debugging line
+		console.log(`User info:`, JSON.stringify(req.user || {}, null, 2)); // Debugging line
 		if (!req.user)
 			return res
 				.status(401)

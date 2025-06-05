@@ -6,7 +6,7 @@ import { env } from "../config/env";
 
 export const authController = {
 	register: async (req: Request, res: Response) => {
-		const { email, password, firstName, lastName } = req.body;
+		const { email, password, firstName, lastName, phone, username, city, postalCode } = req.body;
 
 		try {
 			const existingUser = await usersModel.getByEmail(email);
@@ -14,17 +14,32 @@ export const authController = {
 				return res.status(409).json({ error: "Email déjà utilisé" });
 			}
 
+			console.log("Vérification de l'email:", email);
+
 			const hashedPassword = await argon2.hash(password);
 
+			console.log("Données reçues pour la création de l'utilisateur:")
+		console.log({
+			email,
+			firstName,
+			lastName,
+			password,
+			phone,
+			username,
+			city,
+			postalCode,
+		});
+
+			// Créer l'utilisateur
 			const newUser = await usersModel.create({
 				email,
 				password: hashedPassword,
 				firstName,
 				lastName,
-				phone: "",
-				username: "",
-				city: "",
-				postalCode: "",
+				phone,
+				username,
+				city,
+				postalCode,
 			});
 
 			res.status(201).json({
@@ -43,6 +58,7 @@ export const authController = {
 
 		try {
 			const user = await usersModel.getByEmail(email);
+			console.log("Tentative de connexion pour l'utilisateur:", user);
 
 			if (!user) {
 				return res
@@ -57,10 +73,17 @@ export const authController = {
 					.status(401)
 					.json({ error: "Mot de passe incorrect" });
 			}
-
-			const token = jwt.sign({ id: user.id }, env.JWT_SECRET, {
-				expiresIn: "7d",
-			});
+			console.log("Mot de passe vérifié pour l'utilisateur:", user.email);
+			// Generate JWT with role information
+        	const token = jwt.sign(
+            { 
+                id: user.id,
+                role: user.role  // Include role in the token payload
+            }, 
+            env.JWT_SECRET, 
+            { expiresIn: "7d" }
+        );
+			console.log("Connexion réussie pour l'utilisateur:", token);
 
 			res.json({ message: "Connexion réussie", token, user });
 		} catch (err) {

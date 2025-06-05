@@ -17,6 +17,7 @@ export const usersModel = {
 	},
 
 	getByEmail: (email: string) => {
+		console.log("Fetching user by email:", email);
 		return db.query.users.findFirst({
 			where: eq(users.email, email),
 		});
