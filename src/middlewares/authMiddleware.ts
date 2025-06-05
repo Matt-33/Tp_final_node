@@ -9,16 +9,22 @@ export const authenticateJWT = (
 	req: AuthRequest,
 	res: Response,
 	next: NextFunction
-) => {
+): void => {
 	const authHeader = req.headers.authorization;
-	if (!authHeader) return res.status(401).json({ error: "Token manquant" });
+	if (!authHeader) {
+		res.status(401).json({ error: "Token manquant" });
+		return;
+	}
 
 	const token = authHeader.split(" ")[1];
 	jwt.verify(
 		token,
 		process.env.JWT_SECRET || "defaultsecret",
 		(err, user) => {
-			if (err) return res.status(403).json({ error: "Token invalide" });
+			if (err) {
+				res.status(403).json({ error: "Token invalide" });
+				return;
+			}
 			req.user = user;
 			next();
 		}

@@ -1,12 +1,17 @@
 import { Request, Response, NextFunction } from "express";
-import Joi, { ObjectSchema } from "joi";
+import { ZodSchema } from "zod";
 
-export const validateBody = (schema: ObjectSchema) => {
-	return (req: Request, res: Response, next: NextFunction) => {
-		const { error } = schema.validate(req.body);
-		if (error) {
-			return res.status(400).json({ error: error.details[0].message });
+export const validateBody = (schema: ZodSchema<any>) => {
+	return (req: Request, res: Response, next: NextFunction): void => {
+		const result = schema.safeParse(req.body);
+		if (!result.success) {
+			res.status(400).json({
+				success: false,
+				error: result.error.errors?.[0]?.message || "Données invalides",
+			});
+			return;
 		}
+		req.body = result.data;
 		next();
 	};
 };

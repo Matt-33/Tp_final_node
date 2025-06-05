@@ -11,7 +11,7 @@ export const authController = {
 		try {
 			const existingUser = await usersModel.getByEmail(email);
 			if (existingUser) {
-				return res.status(409).json({ error: "Email déjà utilisé" });
+				res.status(409).json({ error: "Email déjà utilisé" });
 			}
 
 			const hashedPassword = await argon2.hash(password);
@@ -31,6 +31,7 @@ export const authController = {
 				message: "Utilisateur créé",
 				user: newUser,
 			});
+			return;
 		} catch (err) {
 			res.status(500).json({
 				error: "Erreur serveur lors de l'inscription",
@@ -38,24 +39,22 @@ export const authController = {
 		}
 	},
 
-	login: async (req: Request, res: Response) => {
+	login: async (req: Request, res: Response): Promise<void> => {
 		const { email, password } = req.body;
 
 		try {
 			const user = await usersModel.getByEmail(email);
 
 			if (!user) {
-				return res
-					.status(401)
-					.json({ error: "Identifiants invalides" });
+				res.status(401).json({ error: "Identifiants invalides" });
+				return;
 			}
 
 			const isValid = await argon2.verify(user.password, password);
 
 			if (!isValid) {
-				return res
-					.status(401)
-					.json({ error: "Mot de passe incorrect" });
+				res.status(401).json({ error: "Mot de passe incorrect" });
+				return;
 			}
 
 			const token = jwt.sign({ id: user.id }, env.JWT_SECRET, {

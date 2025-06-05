@@ -2,6 +2,11 @@ import { db } from "../db/index";
 import { reviews } from "../shemas";
 import { eq, desc, sql } from "drizzle-orm";
 
+type AverageRatingResult = {
+	averageRating: number | null;
+	totalReviews: number;
+};
+
 type ReviewInsert = typeof reviews.$inferInsert;
 type ReviewUpdate = Partial<Omit<ReviewInsert, "id" | "createdAt">>;
 
@@ -48,16 +53,18 @@ export const reviewsModel = {
 		});
 	},
 
-	getAverageRatingByRestaurant: async (restaurantId: string) => {
+	getAverageRatingByRestaurant: async (
+		restaurantId: string
+	): Promise<AverageRatingResult> => {
 		const result = await db
 			.select({
-				averageRating: sql`AVG(${reviews.rating})`,
-				totalReviews: sql`COUNT(*)`,
+				averageRating: sql<number>`AVG(${reviews.rating})`,
+				totalReviews: sql<number>`COUNT(*)`,
 			})
 			.from(reviews)
 			.where(eq(reviews.restaurantId, restaurantId))
 			.execute();
 
-		return result[0] || { averageRating: 0, totalReviews: 0 };
+		return result[0] ?? { averageRating: 0, totalReviews: 0 };
 	},
 };

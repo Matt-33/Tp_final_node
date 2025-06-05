@@ -27,7 +27,12 @@ export const usersModel = {
 	},
 
 	update: (id: string, data: UserUpdate) => {
-		return db.update(users).set(data).where(eq(users.id, id)).execute();
+		return db
+			.update(users)
+			.set(data)
+			.where(eq(users.id, id))
+			.returning()
+			.execute();
 	},
 
 	delete: (id: string) => {
