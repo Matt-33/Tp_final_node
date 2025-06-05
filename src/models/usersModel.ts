@@ -16,6 +16,12 @@ export const usersModel = {
 		});
 	},
 
+	getByEmail: (email: string) => {
+		return db.query.users.findFirst({
+			where: eq(users.email, email),
+		});
+	},
+
 	getAll: () => {
 		return db.query.users.findMany();
 	},
