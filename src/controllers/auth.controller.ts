@@ -6,7 +6,16 @@ import { env } from "../config/env";
 
 export const authController = {
 	register: async (req: Request, res: Response) => {
-		const { email, password, firstName, lastName, phone, username, city, postalCode } = req.body;
+		const {
+			email,
+			password,
+			firstName,
+			lastName,
+			phone,
+			username,
+			city,
+			postalCode,
+		} = req.body;
 
 		try {
 			const existingUser = await usersModel.getByEmail(email);
@@ -19,7 +28,6 @@ export const authController = {
 
 			const hashedPassword = await argon2.hash(password);
 
-			// Créer l'utilisateur
 			const newUser = await usersModel.create({
 				email,
 				password: hashedPassword,
@@ -62,15 +70,14 @@ export const authController = {
 				return;
 			}
 			console.log("Mot de passe vérifié pour l'utilisateur:", user.email);
-			// Generate JWT with role information
-        	const token = jwt.sign(
-            { 
-                id: user.id,
-                role: user.role  // Include role in the token payload
-            }, 
-            env.JWT_SECRET, 
-            { expiresIn: "7d" }
-        );
+			const token = jwt.sign(
+				{
+					id: user.id,
+					role: user.role,
+				},
+				env.JWT_SECRET,
+				{ expiresIn: "7d" }
+			);
 			console.log("Connexion réussie pour l'utilisateur:", token);
 
 			res.json({ message: "Connexion réussie", token, user });

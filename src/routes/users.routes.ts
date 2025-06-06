@@ -7,10 +7,8 @@ import { createUserSchema, updateUserSchema } from "../validations/userSchemas";
 
 const router = Router();
 
-// Récupération du profil de l'utilisateur connecté (auth uniquement)
 router.get("/profile", authenticateJWT, usersController.getProfile);
 
-// Routes admin protégées
 router.get(
 	"/",
 	authenticateJWT,
@@ -25,7 +23,6 @@ router.get(
 	usersController.getById
 );
 
-// Création d'un utilisateur avec validation de la requête
 router.post(
 	"/",
 	authenticateJWT,
@@ -34,7 +31,6 @@ router.post(
 	usersController.create
 );
 
-// Mise à jour d'un utilisateur avec validation de la requête
 router.put(
 	"/:id",
 	authenticateJWT,
@@ -43,7 +39,6 @@ router.put(
 	usersController.update
 );
 
-// Suppression d'un utilisateur
 router.delete(
 	"/:id",
 	authenticateJWT,

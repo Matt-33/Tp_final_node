@@ -1,6 +1,5 @@
 import { Request, Response } from "express";
 import { menuCategoriesModel } from "../models/menuCategoriesModel";
-import { AuthRequest } from "../middlewares/authMiddleware";
 
 export const menuCategoriesController = {
 	/**
@@ -111,8 +110,6 @@ export const menuCategoriesController = {
 				});
 				return;
 			}
-
-			// Mettre à jour la catégorie
 			const updatedCategory = await menuCategoriesModel.update(id, {
 				name,
 				description,
@@ -141,8 +138,6 @@ export const menuCategoriesController = {
 	delete: async (req: Request, res: Response) => {
 		try {
 			const { id } = req.params;
-
-			// Vérifier si la catégorie existe
 			const existingCategory = await menuCategoriesModel.getById(id);
 
 			if (!existingCategory) {

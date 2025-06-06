@@ -102,8 +102,6 @@ export const tablesController = {
 		try {
 			const { id } = req.params;
 			const { tableNumber, capacity, location, isAvailable } = req.body;
-
-			// Vérifier si la table existe
 			const existingTable = await tableModels.getById(id);
 
 			if (!existingTable) {
@@ -114,7 +112,6 @@ export const tablesController = {
 				return;
 			}
 
-			// Mettre à jour la table
 			const updatedTable = await tableModels.update(id, {
 				tableNumber,
 				capacity,
@@ -142,8 +139,6 @@ export const tablesController = {
 	delete: async (req: Request, res: Response) => {
 		try {
 			const { id } = req.params;
-
-			// Vérifier si la table existe
 			const existingTable = await tableModels.getById(id);
 
 			if (!existingTable) {
@@ -153,8 +148,6 @@ export const tablesController = {
 				});
 				return;
 			}
-
-			// Supprimer la table
 			await tableModels.delete(id);
 
 			res.status(200).json({

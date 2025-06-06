@@ -126,7 +126,6 @@ export const menuItemsController = {
 				allergens,
 			} = req.body;
 
-			// Vérifier si le plat existe
 			const existingMenuItem = await menuItemModel.getById(id);
 
 			if (!existingMenuItem) {
@@ -137,7 +136,6 @@ export const menuItemsController = {
 				return;
 			}
 
-			// Mettre à jour le plat
 			const updatedMenuItem = await menuItemModel.update(id, {
 				categoryId,
 				name,
@@ -172,7 +170,6 @@ export const menuItemsController = {
 		try {
 			const { id } = req.params;
 
-			// Vérifier si le plat existe
 			const existingMenuItem = await menuItemModel.getById(id);
 
 			if (!existingMenuItem) {
@@ -182,8 +179,6 @@ export const menuItemsController = {
 				});
 				return;
 			}
-
-			// Supprimer le plat
 			await menuItemModel.delete(id);
 
 			res.status(200).json({

@@ -9,8 +9,6 @@ export const reviewsController = {
 	create: async (req: AuthRequest, res: Response) => {
 		try {
 			const { restaurantId, rating, comment, visitDate } = req.body;
-
-			// Utiliser l'ID de l'utilisateur authentifié ou celui fourni dans la requête
 			const userId = req.user?.id || req.body.userId;
 
 			if (!userId) {
@@ -116,8 +114,6 @@ export const reviewsController = {
 		try {
 			const { id } = req.params;
 			const { rating, comment, visitDate } = req.body;
-
-			// Vérifier si l'avis existe
 			const existingReview = await reviewsModel.getById(id);
 
 			if (!existingReview) {
@@ -128,7 +124,6 @@ export const reviewsController = {
 				return;
 			}
 
-			// Vérifier que l'utilisateur est l'auteur de l'avis (ou un admin)
 			if (
 				req.user &&
 				req.user.id !== existingReview.userId &&
@@ -141,7 +136,6 @@ export const reviewsController = {
 				return;
 			}
 
-			// Valider la note
 			if (rating && (rating < 1 || rating > 5)) {
 				res.status(400).json({
 					success: false,
@@ -150,7 +144,6 @@ export const reviewsController = {
 				return;
 			}
 
-			// Mettre à jour l'avis
 			const updateData: any = {};
 			if (rating) updateData.rating = rating;
 			if (comment !== undefined) updateData.comment = comment;
@@ -178,8 +171,6 @@ export const reviewsController = {
 	delete: async (req: AuthRequest, res: Response) => {
 		try {
 			const { id } = req.params;
-
-			// Vérifier si l'avis existe
 			const existingReview = await reviewsModel.getById(id);
 
 			if (!existingReview) {
@@ -189,8 +180,6 @@ export const reviewsController = {
 				});
 				return;
 			}
-
-			// Vérifier que l'utilisateur est l'auteur de l'avis (ou un admin)
 			if (
 				req.user &&
 				req.user.id !== existingReview.userId &&
@@ -202,8 +191,6 @@ export const reviewsController = {
 				});
 				return;
 			}
-
-			// Supprimer l'avis
 			await reviewsModel.delete(id);
 
 			res.status(200).json({

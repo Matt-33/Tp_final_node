@@ -138,7 +138,6 @@ export const restaurantsController = {
 				imageUrl,
 			} = req.body;
 
-			// Vérifier si le restaurant existe
 			const existingRestaurant = await restaurantsModel.getById(id);
 
 			if (!existingRestaurant) {
@@ -149,7 +148,6 @@ export const restaurantsController = {
 				return;
 			}
 
-			// Mettre à jour le restaurant
 			const updatedRestaurant = await restaurantsModel.update(id, {
 				name,
 				address,
@@ -189,8 +187,6 @@ export const restaurantsController = {
 	delete: async (req: Request, res: Response) => {
 		try {
 			const { id } = req.params;
-
-			// Vérifier si le restaurant existe
 			const existingRestaurant = await restaurantsModel.getById(id);
 
 			if (!existingRestaurant) {
@@ -201,7 +197,6 @@ export const restaurantsController = {
 				return;
 			}
 
-			// Supprimer le restaurant
 			await restaurantsModel.delete(id);
 
 			res.status(200).json({
@@ -227,7 +222,6 @@ export const restaurantsController = {
 		try {
 			const { restaurantId } = req.params;
 
-			// Vérifier si le restaurant existe
 			const restaurant = await restaurantsModel.getById(restaurantId);
 
 			if (!restaurant) {

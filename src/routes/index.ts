@@ -10,12 +10,10 @@ import reviewsRoutes from "./reviews.routes";
 
 const router = Router();
 
-// Middleware pour vérifier que l'API est active
 router.get("/", (req, res) => {
-  res.json({ message: "API de réservation de restaurants opérationnelle" });
+	res.json({ message: "API de réservation de restaurants opérationnelle" });
 });
 
-// Routes de l'API
 router.use("/auth", authRoutes);
 router.use("/users", usersRoutes);
 router.use("/restaurants", restaurantsRoutes);

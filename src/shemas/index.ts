@@ -5,7 +5,6 @@ import { reservations } from "./drizzle/reservations";
 import { menuCategories, menuItems } from "./drizzle/menuItems";
 import { reviews } from "./drizzle/reviews";
 
-// Export direct
 export {
 	users,
 	restaurants,

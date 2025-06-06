@@ -18,7 +18,6 @@ export const reservationsController = {
 				status,
 			} = req.body;
 
-			// Utiliser l'ID de l'utilisateur authentifié ou celui fourni dans la requête
 			const userId = req.user?.id || req.body.userId;
 
 			if (!userId) {
@@ -174,7 +173,6 @@ export const reservationsController = {
 				confirmed,
 			} = req.body;
 
-			// Vérifier si la réservation existe
 			const existingReservation = await reservationsModel.getById(id);
 
 			if (!existingReservation) {
@@ -185,7 +183,6 @@ export const reservationsController = {
 				return;
 			}
 
-			// Mettre à jour la réservation
 			const updateData: any = {};
 
 			if (tableId) updateData.tableId = tableId;
@@ -226,8 +223,6 @@ export const reservationsController = {
 	confirm: async (req: Request, res: Response) => {
 		try {
 			const { id } = req.params;
-
-			// Vérifier si la réservation existe
 			const existingReservation = await reservationsModel.getById(id);
 
 			if (!existingReservation) {
@@ -238,7 +233,6 @@ export const reservationsController = {
 				return;
 			}
 
-			// Confirmer la réservation
 			const updatedReservation = await reservationsModel.update(id, {
 				confirmed: true,
 				status: "confirmed",
@@ -268,7 +262,6 @@ export const reservationsController = {
 		try {
 			const { id } = req.params;
 
-			// Vérifier si la réservation existe
 			const existingReservation = await reservationsModel.getById(id);
 
 			if (!existingReservation) {
@@ -279,7 +272,6 @@ export const reservationsController = {
 				return;
 			}
 
-			// Supprimer la réservation
 			await reservationsModel.delete(id);
 
 			res.status(200).json({
@@ -310,7 +302,6 @@ export const reservationsController = {
 				return;
 			}
 
-			// Si l'utilisateur n'est pas admin ou propriétaire de la réservation
 			const isAdmin =
 				req.user?.role === "admin" || req.user?.role === "owner";
 			const isOwner = req.user?.id === reservation.userId;

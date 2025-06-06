@@ -28,7 +28,7 @@ export const usersController = {
 					success: false,
 					error: "Un utilisateur avec cet email existe déjà",
 				});
-				return; // <-- ici on stoppe la fonction
+				return;
 			}
 
 			const hashedPassword = await argon2.hash(password);
@@ -71,8 +71,6 @@ export const usersController = {
 	getAll: async (_req: Request, res: Response) => {
 		try {
 			const users = await usersModel.getAll();
-
-			// Retirer les mots de passe de la réponse
 			const usersWithoutPasswords = users.map((user) => {
 				const { password, ...userWithoutPassword } = user;
 				return userWithoutPassword;
@@ -155,7 +153,7 @@ export const usersController = {
 					success: false,
 					error: "Utilisateur non trouvé",
 				});
-				return; // STOP la fonction ici, sans return res
+				return;
 			}
 
 			const updateData: any = {
