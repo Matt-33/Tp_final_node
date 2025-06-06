@@ -10,17 +10,18 @@ import {
 	reservationsModel,
 	reviewsModel,
 } from "../models";
+import Logger from "../utils/logger";
 
 const DEFAULT_PASSWORD = "password123";
 
 async function seed() {
-	console.log("🌱 Début du seeding...");
+	Logger.info("🌱 Début du seeding...");
 
 	try {
 		const client = await pool.connect();
-		console.log("✅ Connexion à la base de données établie");
+		Logger.info("✅ Connexion à la base de données établie");
 
-		console.log("🧹 Nettoyage des données existantes...");
+		Logger.info("🧹 Nettoyage des données existantes...");
 
 		try {
 			await client.query("BEGIN");
@@ -34,18 +35,17 @@ async function seed() {
 			await client.query("SET session_replication_role = DEFAULT");
 
 			await client.query("COMMIT");
-			console.log("✅ Données existantes nettoyées avec succès");
+			Logger.info("✅ Données existantes nettoyées avec succès");
 		} catch (truncateError) {
 			await client.query("ROLLBACK");
-			console.error(
-				"❌ Erreur lors du nettoyage des tables:",
-				truncateError
-			);
+			Logger.error("❌ Erreur lors du nettoyage des tables:", {
+				error: truncateError,
+			});
 			throw truncateError;
 		}
 
 		client.release();
-		console.log("Création des utilisateurs...");
+		Logger.info("Création des utilisateurs...");
 		const adminId = uuidv4();
 		const ownerId = uuidv4();
 		const customerId = uuidv4();
@@ -94,8 +94,8 @@ async function seed() {
 			role: "customer",
 		});
 
-		console.log("✅ Utilisateurs créés avec succès");
-		console.log("Création des restaurants...");
+		Logger.info("✅ Utilisateurs créés avec succès");
+		Logger.info("Création des restaurants...");
 
 		const restaurant1Id = uuidv4();
 		const restaurant2Id = uuidv4();
@@ -135,8 +135,8 @@ async function seed() {
 			ownerId: ownerId,
 		});
 
-		console.log("✅ Restaurants créés avec succès");
-		console.log("Création des tables...");
+		Logger.info("✅ Restaurants créés avec succès");
+		Logger.info("Création des tables...");
 
 		const table1Id = uuidv4();
 		const table2Id = uuidv4();
@@ -179,9 +179,10 @@ async function seed() {
 			isAvailable: true,
 		});
 
-		console.log("✅ Tables créées avec succès");
+		Logger.info("✅ Tables créées avec succès");
 
-		console.log("Création des catégories de menu...");
+		Logger.info("Création des catégories de menu...");
+
 		const frenchEntreesId = uuidv4();
 		const frenchMainsId = uuidv4();
 		const japaneseSushiId = uuidv4();
@@ -215,8 +216,8 @@ async function seed() {
 			description: "Nouilles et soupes traditionnelles japonaises",
 		});
 
-		console.log("✅ Catégories de menu créées avec succès");
-		console.log("Création des plats...");
+		Logger.info("✅ Catégories de menu créées avec succès");
+		Logger.info("Création des plats...");
 
 		await menuItemModel.create({
 			id: uuidv4(),
@@ -281,8 +282,8 @@ async function seed() {
 			allergens: "Gluten, œuf, porc",
 		});
 
-		console.log("✅ Plats créés avec succès");
-		console.log("Création des réservations...");
+		Logger.info("✅ Plats créés avec succès");
+		Logger.info("Création des réservations...");
 
 		const today = new Date();
 		today.setHours(19, 30, 0, 0);
@@ -317,8 +318,8 @@ async function seed() {
 			confirmed: false,
 		});
 
-		console.log("✅ Réservations créées avec succès");
-		console.log("Création des avis...");
+		Logger.info("✅ Réservations créées avec succès");
+		Logger.info("Création des avis...");
 
 		const lastMonth = new Date();
 		lastMonth.setMonth(lastMonth.getMonth() - 1);
@@ -343,21 +344,20 @@ async function seed() {
 			visitDate: lastMonth,
 		});
 
-		console.log("✅ Avis créés avec succès");
+		Logger.info("✅ Avis créés avec succès");
 
-		console.log("🎉 Seeding terminé avec succès !");
-		console.log("\nInformations de connexion:");
-		console.log("- Admin: admin@example.com / password123");
-		console.log("- Propriétaire: owner@example.com / password123");
-		console.log("- Client: client@example.com / password123");
+		Logger.info("🎉 Seeding terminé avec succès !");
+		Logger.info("\nInformations de connexion:");
+		Logger.info("- Admin: admin@example.com / password123");
+		Logger.info("- Propriétaire: owner@example.com / password123");
+		Logger.info("- Client: client@example.com / password123");
 	} catch (error) {
-		console.error("❌ Erreur lors du seeding:", error);
+		Logger.error("❌ Erreur lors du seeding:", { error });
 		// Fix the TypeScript error by checking if error is an object with a cause property
 		if (error && typeof error === "object" && "cause" in error) {
-			console.error(
-				"Cause détaillée:",
-				(error as { cause: unknown }).cause
-			);
+			Logger.error("Cause détaillée:", {
+				cause: (error as { cause: unknown }).cause,
+			});
 		}
 	} finally {
 		// Fermer la connexion

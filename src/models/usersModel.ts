@@ -1,6 +1,7 @@
 import { db } from "../db/index";
 import { users } from "../shemas";
 import { eq } from "drizzle-orm";
+import Logger from "../utils/logger";
 
 type UserInsert = typeof users.$inferInsert;
 type UserUpdate = Partial<Omit<UserInsert, "id" | "createdAt">>;
@@ -17,7 +18,7 @@ export const usersModel = {
 	},
 
 	getByEmail: (email: string) => {
-		console.log("Fetching user by email:", email);
+		Logger.debug("Fetching user by email:", email);
 		return db.query.users.findFirst({
 			where: eq(users.email, email),
 		});

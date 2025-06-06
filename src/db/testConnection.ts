@@ -1,11 +1,12 @@
 import { testDatabaseConnection } from './index';
+import Logger from "../utils/logger";
 
 async function runTestConnection() {
   try {
 	await testDatabaseConnection();
-	console.log('✅ Test de connexion réussi !');
+	Logger.info('✅ Test de connexion réussi !');
   } catch (error) {
-	console.error('❌ Test de connexion échoué :', error);
+	Logger.error('❌ Test de connexion échoué :', { error });
   }
 }
 

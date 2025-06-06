@@ -1,12 +1,12 @@
 import { Request, Response } from "express";
 import { reservationsModel } from "../models/reservationsModel";
-import { AuthRequest } from "../middlewares/authMiddleware";
+import Logger from "../utils/logger";
 
 export const reservationsController = {
 	/**
 	 * Créer une nouvelle réservation
 	 */
-	create: async (req: AuthRequest, res: Response) => {
+	create: async (req: Request, res: Response) => {
 		try {
 			const {
 				restaurantId,
@@ -18,7 +18,8 @@ export const reservationsController = {
 				status,
 			} = req.body;
 
-			const userId = req.user?.id || req.body.userId;
+			// Récupérer l'ID utilisateur depuis l'objet response ou le body
+			const userId = res.locals.user?.id || req.body.userId;
 
 			if (!userId) {
 				res.status(400).json({
@@ -54,10 +55,7 @@ export const reservationsController = {
 				data: newReservation[0],
 			});
 		} catch (error) {
-			console.error(
-				"Erreur lors de la création de la réservation:",
-				error
-			);
+			Logger.error("Erreur lors de la création de la réservation:", { error });
 			res.status(500).json({
 				success: false,
 				error: "Erreur lors de la création de la réservation",
@@ -124,9 +122,9 @@ export const reservationsController = {
 	/**
 	 * Récupérer les réservations d'un utilisateur spécifique
 	 */
-	getByUserId: async (req: AuthRequest, res: Response) => {
+	getByUserId: async (req: Request, res: Response) => {
 		try {
-			const userId = req.user?.id || req.params.userId;
+			const userId = res.locals.user?.id || req.params.userId;
 
 			if (!userId) {
 				res.status(400).json({
@@ -146,10 +144,7 @@ export const reservationsController = {
 				data: userReservations,
 			});
 		} catch (error) {
-			console.error(
-				"Erreur lors de la récupération des réservations:",
-				error
-			);
+			Logger.error("Erreur lors de la récupération des réservations:", { error });
 			res.status(500).json({
 				success: false,
 				error: "Erreur lors de la récupération des réservations de l'utilisateur",
@@ -289,7 +284,7 @@ export const reservationsController = {
 			});
 		}
 	},
-	cancel: async (req: AuthRequest, res: Response) => {
+	cancel: async (req: Request, res: Response) => {
 		try {
 			const { id } = req.params;
 
@@ -303,8 +298,8 @@ export const reservationsController = {
 			}
 
 			const isAdmin =
-				req.user?.role === "admin" || req.user?.role === "owner";
-			const isOwner = req.user?.id === reservation.userId;
+				res.locals.user?.role === "admin" || res.locals.user?.role === "owner";
+			const isOwner = res.locals.user?.id === reservation.userId;
 
 			if (!isAdmin && !isOwner) {
 				res.status(403).json({
@@ -325,7 +320,7 @@ export const reservationsController = {
 			});
 			return;
 		} catch (error) {
-			console.error("Erreur lors de l'annulation:", error);
+			Logger.error("Erreur lors de l'annulation:", { error });
 			res.status(500).json({
 				success: false,
 				error: "Erreur lors de l'annulation de la réservation",

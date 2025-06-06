@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { reviewsModel } from "../models/reviewsModel";
 import { AuthRequest } from "../middlewares/authMiddleware";
+import Logger from "../utils/logger";
 
 export const reviewsController = {
 	/**
@@ -11,29 +12,6 @@ export const reviewsController = {
 			const { restaurantId, rating, comment, visitDate } = req.body;
 			const userId = req.user?.id || req.body.userId;
 
-			if (!userId) {
-				res.status(400).json({
-					success: false,
-					error: "L'ID de l'utilisateur est requis",
-				});
-				return;
-			}
-
-			if (!restaurantId) {
-				res.status(400).json({
-					success: false,
-					error: "L'ID du restaurant est requis",
-				});
-				return;
-			}
-
-			if (!rating || rating < 1 || rating > 5) {
-				res.status(400).json({
-					success: false,
-					error: "La note doit être comprise entre 1 et 5",
-				});
-				return;
-			}
 
 			const newReview = await reviewsModel.create({
 				userId,
@@ -49,7 +27,7 @@ export const reviewsController = {
 				data: newReview[0],
 			});
 		} catch (error) {
-			console.error("Erreur lors de la création de l'avis:", error);
+			Logger.error("Erreur lors de la création de l'avis:", { error });
 			res.status(500).json({
 				success: false,
 				error: "Erreur lors de la création de l'avis",
@@ -70,7 +48,7 @@ export const reviewsController = {
 				data: reviews,
 			});
 		} catch (error) {
-			console.error("Erreur lors de la récupération des avis:", error);
+			Logger.error("Erreur lors de la récupération des avis:", { error });
 			res.status(500).json({
 				success: false,
 				error: "Erreur lors de la récupération des avis",
@@ -99,7 +77,7 @@ export const reviewsController = {
 				data: review,
 			});
 		} catch (error) {
-			console.error("Erreur lors de la récupération de l'avis:", error);
+			Logger.error("Erreur lors de la récupération de l'avis:", { error });
 			res.status(500).json({
 				success: false,
 				error: "Erreur lors de la récupération de l'avis",
@@ -124,6 +102,7 @@ export const reviewsController = {
 				return;
 			}
 
+			// Vérification des droits d'accès (utilisateur propriétaire ou admin)
 			if (
 				req.user &&
 				req.user.id !== existingReview.userId &&
@@ -136,16 +115,9 @@ export const reviewsController = {
 				return;
 			}
 
-			if (rating && (rating < 1 || rating > 5)) {
-				res.status(400).json({
-					success: false,
-					error: "La note doit être comprise entre 1 et 5",
-				});
-				return;
-			}
-
+			// Les vérifications du format des données sont gérées par Zod
 			const updateData: any = {};
-			if (rating) updateData.rating = rating;
+			if (rating !== undefined) updateData.rating = rating;
 			if (comment !== undefined) updateData.comment = comment;
 			if (visitDate) updateData.visitDate = new Date(visitDate);
 
@@ -219,26 +191,23 @@ export const reviewsController = {
 				return;
 			}
 
-			const updateData: any = {
-				approved,
-				moderationComment,
-			};
-
-			const updatedReview = await reviewsModel.update(id, updateData);
+			// Use the correct property names that match the database schema
+			const updatedReview = await reviewsModel.update(id, {
+				isApproved: approved,
+				moderationComment: moderationComment,
+			});
 
 			res.status(200).json({
 				success: true,
 				message: "Avis modéré avec succès",
 				data: updatedReview,
 			});
-			return;
 		} catch (error) {
-			console.error("Erreur lors de la modération de l'avis:", error);
+			Logger.error("Erreur lors de la modération de l'avis:", { error });
 			res.status(500).json({
 				success: false,
 				error: "Erreur lors de la modération de l'avis",
 			});
-			return;
 		}
 	},
 };
